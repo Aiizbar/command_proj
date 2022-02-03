@@ -32,10 +32,10 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_s:
+            if event.key == pygame.K_PAGEUP:
                 spn1+=speed
                 spn2+=speed
-            if event.key == pygame.K_w:
+            if event.key == pygame.K_PAGEDOWN:
                 spn1 -= speed
                 spn2 -= speed
             map_request = f"http://static-maps.yandex.ru/1.x/?ll={ll1},{ll2}&spn={spn1},{spn2}&l=map"
