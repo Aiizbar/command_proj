@@ -45,12 +45,7 @@ def check_interaction(button_list):
         if event.type == pygame.QUIT:
             pygame.quit()
             quit()
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            for button in button_list:
-                if button.rect.collidepoint(pygame.mouse.get_pos()):
-                    if button.text == 'текст в кнопке':
-                        # что то делаем
-                        pass
+
 
 
 def draw_buttons(button_list, sc):
@@ -126,6 +121,22 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            for button in button_list:
+                if button.rect.collidepoint(pygame.mouse.get_pos()):
+                    if button.name == Button.Names.scheme:
+                        type_map = 'map'
+                    if button.name == Button.Names.satellite:
+                        type_map = 'sat'
+                    if button.name == Button.Names.hybrid:
+                        type_map = 'skl'
+
+            map_request = get_req()
+            response = requests.get(map_request)
+            map_file = "map.png"
+            with open(map_file, "wb") as file:
+                file.write(response.content)
+
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_PAGEUP:
                 spn1 += speed
