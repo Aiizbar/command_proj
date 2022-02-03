@@ -47,7 +47,6 @@ def check_interaction(button_list):
             quit()
 
 
-
 def draw_buttons(button_list, sc):
     for button in button_list:
         pygame.draw.rect(sc, (200, 200, 200), button.rect)
@@ -63,6 +62,7 @@ def draw_buttons(button_list, sc):
 def get_req():
     global ll1, ll2, spn1, spn2, z, type_map, pic_width, pic_height
     map_request = f"http://static-maps.yandex.ru/1.x/?ll={ll1},{ll2}&spn={spn1},{spn2}&z={z}&l={type_map}&size={pic_width},{pic_height}"
+
     return map_request
 
 
@@ -103,12 +103,21 @@ z = 13
 type_map = 'map'
 spn1 = 0.002
 spn2 = 0.002
+
+speed = 0.001
+
+search_x = 0
+search_y = 0
+search_string = ""
+search_width = 600
+search_height = 60
+font = pygame.font.SysFont("Times New Roman", 50)
+
 map_request = get_req()
 response = requests.get(map_request)
 map_file = "map.png"
 with open(map_file, "wb") as file:
     file.write(response.content)
-
 image = pygame.image.load(map_file)
 image = pygame.transform.scale(image, (WIDTH, HEIGHT))
 screen.blit(image, (0, 0))
@@ -143,6 +152,8 @@ while running:
                         do_i_need_to_update_the_picture = True
 
         if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                running = False
             if event.key == pygame.K_PAGEUP:
                 spn1 += speed
                 spn2 += speed
@@ -165,20 +176,22 @@ while running:
                 do_i_need_to_update_the_picture = True
             else:
                 if event.key == pygame.K_RETURN:
+                    do_i_need_to_update_the_picture = True
                     geo_object_name = search_string
                     geocode_request = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={geo_object_name}&format=json"
                     response_geocode = requests.get(geocode_request)
                     json_response = response_geocode.json()
-                    toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+                    toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0][
+                        "GeoObject"]
                     s = toponym["Point"]["pos"].split()
                     ll1 = float(s[0])
                     ll2 = float(s[1])
                     print(s)
-                    print(ll1,ll2)
+                    print(ll1, ll2)
                 elif event.key == pygame.K_BACKSPACE:
-                    search_string = search_string[:len(search_string)-1]
+                    search_string = search_string[:len(search_string) - 1]
                 else:
-                    search_string+=event.unicode
+                    search_string += event.unicode
 
     if do_i_need_to_update_the_picture:
         map_request = get_req()
@@ -193,6 +206,11 @@ while running:
 
     draw_buttons(button_list, screen)
     check_interaction(button_list)
+
+    pygame.draw.rect(screen, (255, 255, 255), (0, 0, WIDTH, search_height))
+    text = font.render(search_string, True, (0, 0, 0))
+    screen.blit(text, (0, 0))
+    pygame.display.flip()
 
     pygame.display.flip()
 
