@@ -80,10 +80,11 @@ while running:
                     response_geocode = requests.get(geocode_request)
                     json_response = response_geocode.json()
                     toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
-                    s = toponym["Point"]["pos"]
+                    s = toponym["Point"]["pos"].split()
                     ll1 = float(s[0])
                     ll2 = float(s[1])
                     print(s)
+                    print(ll1,ll2)
                 elif event.key == pygame.K_BACKSPACE:
                     search_string = search_string[:len(search_string)-1]
                 else:
