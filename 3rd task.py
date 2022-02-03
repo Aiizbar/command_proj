@@ -105,6 +105,13 @@ spn1 = 0.002
 spn2 = 0.002
 map_request = get_req()
 response = requests.get(map_request)
+map_file = "map.png"
+with open(map_file, "wb") as file:
+    file.write(response.content)
+
+image = pygame.image.load(map_file)
+image = pygame.transform.scale(image, (WIDTH, HEIGHT))
+screen.blit(image, (0, 0))
 
 if not response:
     print("Ошибка выполнения запроса:")
@@ -118,6 +125,7 @@ with open(map_file, "wb") as file:
 speed = 0.001
 
 while running:
+    do_i_need_to_update_the_picture = False
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -126,46 +134,66 @@ while running:
                 if button.rect.collidepoint(pygame.mouse.get_pos()):
                     if button.name == Button.Names.scheme:
                         type_map = 'map'
+                        do_i_need_to_update_the_picture = True
                     if button.name == Button.Names.satellite:
                         type_map = 'sat'
+                        do_i_need_to_update_the_picture = True
                     if button.name == Button.Names.hybrid:
                         type_map = 'skl'
-
-            map_request = get_req()
-            response = requests.get(map_request)
-            map_file = "map.png"
-            with open(map_file, "wb") as file:
-                file.write(response.content)
+                        do_i_need_to_update_the_picture = True
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_PAGEUP:
                 spn1 += speed
                 spn2 += speed
-            if event.key == pygame.K_PAGEDOWN:
+                do_i_need_to_update_the_picture = True
+            elif event.key == pygame.K_PAGEDOWN:
                 spn1 -= speed
                 spn2 -= speed
-            if event.key == pygame.K_UP:
+                do_i_need_to_update_the_picture = True
+            elif event.key == pygame.K_UP:
                 ll2 += speed
-            if event.key == pygame.K_DOWN:
+                do_i_need_to_update_the_picture = True
+            elif event.key == pygame.K_DOWN:
                 ll2 -= speed
-            if event.key == pygame.K_LEFT:
+                do_i_need_to_update_the_picture = True
+            elif event.key == pygame.K_LEFT:
                 ll1 -= speed
-            if event.key == pygame.K_RIGHT:
+                do_i_need_to_update_the_picture = True
+            elif event.key == pygame.K_RIGHT:
                 ll1 += speed
+                do_i_need_to_update_the_picture = True
+            else:
+                if event.key == pygame.K_RETURN:
+                    geo_object_name = search_string
+                    geocode_request = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={geo_object_name}&format=json"
+                    response_geocode = requests.get(geocode_request)
+                    json_response = response_geocode.json()
+                    toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+                    s = toponym["Point"]["pos"].split()
+                    ll1 = float(s[0])
+                    ll2 = float(s[1])
+                    print(s)
+                    print(ll1,ll2)
+                elif event.key == pygame.K_BACKSPACE:
+                    search_string = search_string[:len(search_string)-1]
+                else:
+                    search_string+=event.unicode
 
-            map_request = get_req()
-            response = requests.get(map_request)
-            map_file = "map.png"
-            with open(map_file, "wb") as file:
-                file.write(response.content)
+    if do_i_need_to_update_the_picture:
+        map_request = get_req()
+        response = requests.get(map_request)
+        map_file = "map.png"
+        with open(map_file, "wb") as file:
+            file.write(response.content)
 
         image = pygame.image.load(map_file)
         image = pygame.transform.scale(image, (WIDTH, HEIGHT))
         screen.blit(image, (0, 0))
 
-        draw_buttons(button_list, screen)
-        check_interaction(button_list)
+    draw_buttons(button_list, screen)
+    check_interaction(button_list)
 
-        pygame.display.flip()
+    pygame.display.flip()
 
 os.remove(map_file)
